@@ -7,6 +7,5 @@ int main(void)
 {
 	initWindow window;
 	window.run();
-
 	return 0;
 }
