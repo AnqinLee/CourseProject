@@ -125,6 +125,10 @@
   <ItemGroup>
     <ClCompile Include="CourseProject.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameOfLife.h" />
+    <ClInclude Include="initWindow.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
