@@ -12,6 +12,10 @@ private:
 	int gridHeight;
 	const int windowWidth = 500;
 	const int windowHeight = 500;
+	const int maxGridWidth = 160;
+	const int minGridWidth = 60;
+	const int maxGridHeight = 90;
+	const int minGridHeight = 20;
 	COLORREF gridColor;
 
 	int StartButtonx = windowWidth / 4;
@@ -20,6 +24,7 @@ private:
 	int StartButtonHeight = windowHeight / 16;
 
 	bool isInSetColor = false;
+	bool isInSetSize = false;
 
 public:
 	initWindow(int cellSize = DEFAULTCELLSIZE, int gridWidth = DEFAULTGRIDWIDTH, int gridHeight = DEFAULTGRIDHEIGHT) :
@@ -95,7 +100,14 @@ public:
 		return false;
 	}
 
-	void drawSetColor()
+	bool isHangingOnSetSize(ExMessage& msg)
+	{
+		if (msg.x >= StartButtonx && msg.x <= StartButtonx + StartButtonWidth && msg.y >= StartButtony * 3 && msg.y <= StartButtonHeight + StartButtony * 3)
+			return true;
+		return false;
+	}
+
+	void drawSetColor(void)
 	{
 		cleardevice();
 		drawBackground();
@@ -112,6 +124,29 @@ public:
 		TCHAR BValue[100];
 		_stprintf_s(BValue, _T("B Value=%d"), GetBValue(gridColor));
 		drawButton(StartButtonx, windowHeight * 23 / 32, StartButtonWidth, StartButtonHeight, BValue);
+
+		TCHAR UI[100] = _T("Click the right side of button to add,left to reduce.");
+		outtextxy(0, windowHeight * 15 / 16, UI);
+
+		FlushBatchDraw();
+	}
+
+	void drawSetSize(void)
+	{
+		cleardevice();
+		drawBackground();
+		drawButton(0, 0, windowWidth / 8, windowHeight / 16, _T("Return"));
+		
+		TCHAR gridWidthMsg[100];
+		_stprintf_s(gridWidthMsg, _T("Horizontal grid nums:%d"), gridWidth);
+		drawButton(StartButtonx, windowHeight * 29 / 96, StartButtonWidth, StartButtonHeight, gridWidthMsg);
+
+		TCHAR gridHeightMsg[100];
+		_stprintf_s(gridHeightMsg, _T("Vertical grid nums:%d"), gridHeight);
+		drawButton(StartButtonx, windowHeight * 61 / 96, StartButtonWidth, StartButtonHeight, gridHeightMsg);
+
+		TCHAR UI[100] = _T("Click the right side of button to add,left to reduce.");
+		outtextxy(0, windowHeight * 15 / 16, UI);
 
 		FlushBatchDraw();
 	}
@@ -137,12 +172,86 @@ public:
 		case WM_LBUTTONDOWN:
 			if (!isInSetColor)
 			{
-				if (isHangingOnStart(msg))
-					runGame();
-				if (isHangingOnSetColor(msg))
+				if (!isInSetSize)
 				{
-					isInSetColor = true;
-					drawSetColor();
+					if (isHangingOnStart(msg))
+						runGame();
+					else if (isHangingOnSetColor(msg))
+					{
+						isInSetColor = true;
+						drawSetColor();
+					}
+					else if (isHangingOnSetSize(msg))
+					{
+						isInSetSize = true;
+						drawSetSize();
+					}
+				}
+				else
+				{
+					if (isHangingOnReturn(msg))
+					{
+						isInSetSize = false;
+						drawMenu();
+					}
+					else
+					{
+						if (msg.y <= windowHeight / 2)
+						{
+							if (msg.x <= windowWidth / 4)
+							{
+								gridWidth -= 10;
+								if (gridWidth < minGridWidth)
+									gridWidth += (maxGridWidth - minGridWidth);
+							}
+							else if (msg.x <= windowWidth / 2)
+							{
+								gridWidth -= 5;
+								if (gridWidth < minGridWidth)
+									gridWidth += (maxGridWidth - minGridWidth);
+							}
+							else if (msg.x <= windowWidth * 3 / 4)
+							{
+								gridWidth += 5;
+								if (gridWidth > maxGridWidth)
+									gridWidth -= (maxGridWidth - minGridWidth);
+							}
+							else
+							{
+								gridWidth += 10;
+								if (gridWidth > maxGridWidth)
+									gridWidth -= (maxGridWidth - minGridWidth);
+							}
+						}
+						else
+						{
+							if (msg.x <= windowWidth / 4)
+							{
+								gridHeight -= 10;
+								if (gridHeight < minGridHeight)
+									gridHeight += (maxGridHeight - minGridHeight);
+							}
+							else if (msg.x <= windowWidth / 2)
+							{
+								gridHeight -= 5;
+								if (gridHeight < minGridHeight)
+									gridHeight += (maxGridHeight - minGridHeight);
+							}
+							else if (msg.x <= windowWidth * 3 / 4)
+							{
+								gridHeight += 5;
+								if (gridHeight > maxGridHeight)
+									gridHeight -= (maxGridHeight - minGridHeight);
+							}
+							else
+							{
+								gridHeight += 10;
+								if (gridHeight > maxGridHeight)
+									gridHeight -= (maxGridHeight - minGridHeight);
+							}
+						}
+						drawSetSize();
+					}
 				}
 			}
 			else
