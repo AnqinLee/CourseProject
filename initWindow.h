@@ -27,6 +27,7 @@ private:
 	bool isInSetSize = false;
 
 public:
+	//构造函数
 	initWindow(int cellSize = DEFAULTCELLSIZE, int gridWidth = DEFAULTGRIDWIDTH, int gridHeight = DEFAULTGRIDHEIGHT) :
 		cellSize(cellSize), gridWidth(gridWidth), gridHeight(gridHeight), gridColor(DEFAULTGRIDCOLOR)
 	{
@@ -36,12 +37,14 @@ public:
 		BeginBatchDraw();
 	}
 
+	//析构函数
 	~initWindow(void)
 	{
 		EndBatchDraw();
 		closegraph();
 	}
 
+	//绘制按钮（文本居中显示于矩形上）
 	void drawButton(int buttonx, int buttony, int buttonWidth, int buttonHeight, LPCTSTR text, int nHeight = 16, COLORREF buttoncolor = RED)
 	{
 		COLORREF textcolor = RGB(255 - GetRValue(buttoncolor), 255 - GetGValue(buttoncolor), 255 - GetBValue(buttoncolor));
@@ -55,6 +58,7 @@ public:
 		outtextxy(buttonx + spaceWidth, buttony + spaceHeight, text);
 	}
 
+	//绘制方格背景
 	void drawBackground(void)
 	{
 		setfillcolor(gridColor);
@@ -68,6 +72,7 @@ public:
 		FlushBatchDraw();
 	}
 
+	//绘制目录界面
 	void drawMenu(void)
 	{
 		cleardevice();
@@ -79,6 +84,7 @@ public:
 		FlushBatchDraw();
 	}
 
+	//以下四个函数用于判断鼠标点击位置
 	bool isHangingOnStart(ExMessage& msg)
 	{
 		if (msg.x >= StartButtonx && msg.x <= StartButtonx + StartButtonWidth && msg.y >= StartButtony && msg.y <= StartButtonHeight + StartButtony)
@@ -107,6 +113,7 @@ public:
 		return false;
 	}
 
+	//绘制颜色设置界面
 	void drawSetColor(void)
 	{
 		cleardevice();
@@ -131,6 +138,7 @@ public:
 		FlushBatchDraw();
 	}
 
+	//绘制方格数量设置界面
 	void drawSetSize(void)
 	{
 		cleardevice();
@@ -151,6 +159,7 @@ public:
 		FlushBatchDraw();
 	}
 
+	//运行游戏
 	void runGame(void)
 	{
 		EndBatchDraw();
@@ -159,6 +168,7 @@ public:
 		game.run();
 	}
 
+	//处理鼠标键盘消息
 	void handleMessage(void)
 	{
 		ExMessage msg;
@@ -303,6 +313,7 @@ public:
 		}
 	}
 
+	//运行主程序
 	void run(void)
 	{
 		drawMenu();
