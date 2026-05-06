@@ -25,6 +25,7 @@ private:
 
 	bool isInSetColor = false;
 	bool isInSetSize = false;
+	bool isPainting = false;
 
 public:
 	//¹¹Ôìº¯Êý
@@ -180,6 +181,10 @@ public:
 				runGame();
 			break;
 		case WM_LBUTTONDOWN:
+			if (isPainting)
+				break;
+			else
+				isPainting = true;
 			if (!isInSetColor)
 			{
 				if (!isInSetSize)
@@ -310,6 +315,8 @@ public:
 				}
 			}
 			break;
+		case WM_LBUTTONUP:
+			isPainting = false;
 		}
 	}
 
