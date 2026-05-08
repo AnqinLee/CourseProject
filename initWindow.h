@@ -25,6 +25,7 @@ private:
 
 	bool isInSetColor = false;
 	bool isInSetSize = false;
+	bool isInMenu = true;
 	bool isPainting = false;
 
 public:
@@ -88,6 +89,8 @@ public:
 	//以下四个函数用于判断鼠标点击位置
 	bool isHangingOnStart(ExMessage& msg)
 	{
+		if (!isInMenu)
+			return false;
 		if (msg.x >= StartButtonx && msg.x <= StartButtonx + StartButtonWidth && msg.y >= StartButtony && msg.y <= StartButtonHeight + StartButtony)
 			return true;
 		return false;
@@ -95,6 +98,8 @@ public:
 
 	bool isHangingOnSetColor(ExMessage& msg)
 	{
+		if (!isInMenu)
+			return false;
 		if (msg.x >= StartButtonx && msg.x <= StartButtonx + StartButtonWidth && msg.y >= StartButtony * 2 && msg.y <= StartButtonHeight + StartButtony * 2)
 			return true;
 		return false;
@@ -102,6 +107,8 @@ public:
 
 	bool isHangingOnReturn(ExMessage& msg)
 	{
+		if (isInMenu)
+			return false;
 		if (msg.x <= windowWidth / 8 && msg.y <= windowHeight / 16)
 			return true;
 		return false;
@@ -109,6 +116,8 @@ public:
 
 	bool isHangingOnSetSize(ExMessage& msg)
 	{
+		if (!isInMenu)
+			return false;
 		if (msg.x >= StartButtonx && msg.x <= StartButtonx + StartButtonWidth && msg.y >= StartButtony * 3 && msg.y <= StartButtonHeight + StartButtony * 3)
 			return true;
 		return false;
@@ -185,135 +194,125 @@ public:
 				break;
 			else
 				isPainting = true;
-			if (!isInSetColor)
+			if (isHangingOnStart(msg))
+				runGame();
+			else if (isHangingOnSetColor(msg))
 			{
-				if (!isInSetSize)
+				isInSetColor = true;
+				isInSetSize = false;
+				isInMenu = false;
+				drawSetColor();
+			}
+			else if (isHangingOnSetSize(msg))
+			{
+				isInSetSize = true;
+				isInSetColor = false;
+				isInMenu = false;
+				drawSetSize();
+			}
+			else if (isHangingOnReturn(msg))
+			{
+				isInSetSize = false;
+				isInSetColor = false;
+				isInMenu = true;
+				drawMenu();
+			}
+			else if(isInSetSize)
+			{
+				if (msg.y <= windowHeight / 2)
 				{
-					if (isHangingOnStart(msg))
-						runGame();
-					else if (isHangingOnSetColor(msg))
+					if (msg.x <= windowWidth / 4)
 					{
-						isInSetColor = true;
-						drawSetColor();
+						gridWidth -= 10;
+						if (gridWidth < minGridWidth)
+							gridWidth += (maxGridWidth - minGridWidth);
 					}
-					else if (isHangingOnSetSize(msg))
+					else if (msg.x <= windowWidth / 2)
 					{
-						isInSetSize = true;
-						drawSetSize();
+						gridWidth -= 5;
+						if (gridWidth < minGridWidth)
+							gridWidth += (maxGridWidth - minGridWidth);
+					}
+					else if (msg.x <= windowWidth * 3 / 4)
+					{
+						gridWidth += 5;
+						if (gridWidth > maxGridWidth)
+							gridWidth -= (maxGridWidth - minGridWidth);
+					}
+					else
+					{
+						gridWidth += 10;
+						if (gridWidth > maxGridWidth)
+							gridWidth -= (maxGridWidth - minGridWidth);
 					}
 				}
 				else
 				{
-					if (isHangingOnReturn(msg))
+					if (msg.x <= windowWidth / 4)
 					{
-						isInSetSize = false;
-						drawMenu();
+						gridHeight -= 10;
+						if (gridHeight < minGridHeight)
+							gridHeight += (maxGridHeight - minGridHeight);
+					}
+					else if (msg.x <= windowWidth / 2)
+					{
+						gridHeight -= 5;
+						if (gridHeight < minGridHeight)
+							gridHeight += (maxGridHeight - minGridHeight);
+					}
+					else if (msg.x <= windowWidth * 3 / 4)
+					{
+						gridHeight += 5;
+						if (gridHeight > maxGridHeight)
+							gridHeight -= (maxGridHeight - minGridHeight);
 					}
 					else
 					{
-						if (msg.y <= windowHeight / 2)
-						{
-							if (msg.x <= windowWidth / 4)
-							{
-								gridWidth -= 10;
-								if (gridWidth < minGridWidth)
-									gridWidth += (maxGridWidth - minGridWidth);
-							}
-							else if (msg.x <= windowWidth / 2)
-							{
-								gridWidth -= 5;
-								if (gridWidth < minGridWidth)
-									gridWidth += (maxGridWidth - minGridWidth);
-							}
-							else if (msg.x <= windowWidth * 3 / 4)
-							{
-								gridWidth += 5;
-								if (gridWidth > maxGridWidth)
-									gridWidth -= (maxGridWidth - minGridWidth);
-							}
-							else
-							{
-								gridWidth += 10;
-								if (gridWidth > maxGridWidth)
-									gridWidth -= (maxGridWidth - minGridWidth);
-							}
-						}
-						else
-						{
-							if (msg.x <= windowWidth / 4)
-							{
-								gridHeight -= 10;
-								if (gridHeight < minGridHeight)
-									gridHeight += (maxGridHeight - minGridHeight);
-							}
-							else if (msg.x <= windowWidth / 2)
-							{
-								gridHeight -= 5;
-								if (gridHeight < minGridHeight)
-									gridHeight += (maxGridHeight - minGridHeight);
-							}
-							else if (msg.x <= windowWidth * 3 / 4)
-							{
-								gridHeight += 5;
-								if (gridHeight > maxGridHeight)
-									gridHeight -= (maxGridHeight - minGridHeight);
-							}
-							else
-							{
-								gridHeight += 10;
-								if (gridHeight > maxGridHeight)
-									gridHeight -= (maxGridHeight - minGridHeight);
-							}
-						}
-						drawSetSize();
+						gridHeight += 10;
+						if (gridHeight > maxGridHeight)
+							gridHeight -= (maxGridHeight - minGridHeight);
 					}
 				}
+				drawSetSize();
 			}
-			else
+			else if (isInSetColor)
 			{
-				if (isHangingOnReturn(msg))
+				if (msg.y <= windowHeight * 3 / 8)
 				{
-					isInSetColor = false;
-					drawMenu();
+					if (msg.x <= windowWidth / 4)
+						gridColor = RGB((GetRValue(gridColor) + 245) % 255, GetGValue(gridColor), GetBValue(gridColor));
+					else if (msg.x <= windowWidth / 2)
+						gridColor = RGB((GetRValue(gridColor) + 250) % 255, GetGValue(gridColor), GetBValue(gridColor));
+					else if (msg.x <= windowWidth * 3 / 4)
+						gridColor = RGB((GetRValue(gridColor) + 5) % 255, GetGValue(gridColor), GetBValue(gridColor));
+					else
+						gridColor = RGB((GetRValue(gridColor) + 10) % 255, GetGValue(gridColor), GetBValue(gridColor));
+				}
+				else if (msg.y <= windowHeight * 5 / 8)
+				{
+					if (msg.x <= windowWidth / 4)
+						gridColor = RGB(GetRValue(gridColor), (GetGValue(gridColor) + 245) % 255, GetBValue(gridColor));
+					else if (msg.x <= windowWidth / 2)
+						gridColor = RGB(GetRValue(gridColor), (GetGValue(gridColor) + 250) % 255, GetBValue(gridColor));
+					else if (msg.x <= windowWidth * 3 / 4)
+						gridColor = RGB(GetRValue(gridColor), (GetGValue(gridColor) + 5) % 255, GetBValue(gridColor));
+					else
+						gridColor = RGB(GetRValue(gridColor), (GetGValue(gridColor) + 10) % 255, GetBValue(gridColor));
 				}
 				else
 				{
-					if (msg.y <= windowHeight * 3 / 8)
-					{
-						if (msg.x <= windowWidth / 4)
-							gridColor = RGB((GetRValue(gridColor) + 245) % 255, GetGValue(gridColor), GetBValue(gridColor));
-						else if (msg.x <= windowWidth / 2)
-							gridColor = RGB((GetRValue(gridColor) + 250) % 255, GetGValue(gridColor), GetBValue(gridColor));
-						else if (msg.x <= windowWidth * 3 / 4)
-							gridColor = RGB((GetRValue(gridColor) + 5) % 255, GetGValue(gridColor), GetBValue(gridColor));
-						else
-							gridColor = RGB((GetRValue(gridColor) + 10) % 255, GetGValue(gridColor), GetBValue(gridColor));
-					}
-					else if (msg.y <= windowHeight * 5 / 8)
-					{
-						if (msg.x <= windowWidth / 4)
-							gridColor = RGB(GetRValue(gridColor), (GetGValue(gridColor) + 245) % 255, GetBValue(gridColor));
-						else if (msg.x <= windowWidth / 2)
-							gridColor = RGB(GetRValue(gridColor), (GetGValue(gridColor) + 250) % 255, GetBValue(gridColor));
-						else if (msg.x <= windowWidth * 3 / 4)
-							gridColor = RGB(GetRValue(gridColor), (GetGValue(gridColor) + 5) % 255, GetBValue(gridColor));
-						else
-							gridColor = RGB(GetRValue(gridColor), (GetGValue(gridColor) + 10) % 255, GetBValue(gridColor));
-					}
+					if (msg.x <= windowWidth / 4)
+						gridColor = RGB(GetRValue(gridColor), GetGValue(gridColor), (GetBValue(gridColor) + 245) % 255);
+					else if (msg.x <= windowWidth / 2)
+						gridColor = RGB(GetRValue(gridColor), GetGValue(gridColor), (GetBValue(gridColor) + 250) % 255);
+					else if (msg.x <= windowWidth * 3 / 4)
+						gridColor = RGB(GetRValue(gridColor), GetGValue(gridColor), (GetBValue(gridColor) + 5) % 255);
 					else
-					{
-						if (msg.x <= windowWidth / 4)
-							gridColor = RGB(GetRValue(gridColor), GetGValue(gridColor), (GetBValue(gridColor) + 245) % 255);
-						else if (msg.x <= windowWidth / 2)
-							gridColor = RGB(GetRValue(gridColor), GetGValue(gridColor), (GetBValue(gridColor) + 250) % 255);
-						else if (msg.x <= windowWidth * 3 / 4)
-							gridColor = RGB(GetRValue(gridColor), GetGValue(gridColor), (GetBValue(gridColor) + 5) % 255);
-						else
-							gridColor = RGB(GetRValue(gridColor), GetGValue(gridColor), (GetBValue(gridColor) + 10) % 255);
-					}
-					drawSetColor();
+						gridColor = RGB(GetRValue(gridColor), GetGValue(gridColor), (GetBValue(gridColor) + 10) % 255);
 				}
+				drawSetColor();
 			}
+			else {}
 			break;
 		case WM_LBUTTONUP:
 			isPainting = false;
